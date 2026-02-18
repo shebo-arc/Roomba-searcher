@@ -6,12 +6,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 import joblib
+from scipy.stats import skew, kurtosis, entropy
 
 # ---------------- CONFIG ----------------
-WINDOW_SIZE = 32
-STRIDE = 16
-FEATURES = ["ax", "ay", "az", "gx", "gy", "gz"]
-GESTURES = ["idle","forward", "left", "right", "stop"]  # exclude idle
+WINDOW_SIZE = 100
+STRIDE = 25
+FEATURES = ["ay", "az", "gx", "gz"]
+GESTURES = ["idle","forward", "left", "right", "stop"]
 # ----------------------------------------
 
 def extract_features(window):
@@ -19,10 +20,17 @@ def extract_features(window):
     for col in range(window.shape[1]):
         signal = window[:, col]
         feats.extend([
-            np.mean(signal),
-            np.std(signal),
-            np.max(signal),
-            np.min(signal)
+            np.min(signal),  # 1
+            np.max(signal),  # 2
+            np.max(signal) - np.min(signal),  # 3 peak-to-peak
+            np.median(signal),  # 4
+            np.median(np.abs(signal - np.median(signal))),  # 5 MAD
+            np.percentile(signal, 75) - np.percentile(signal, 25),  # 6 IQR
+            np.sqrt(np.mean(signal ** 2)),  # 7 RMS
+            skew(signal, nan_policy='omit'),  # 8
+            kurtosis(signal, nan_policy='omit'),  # 9
+            np.sum(signal ** 2) / len(signal),  # 10 normalized energy
+            np.sum(np.diff(np.sign(signal)) != 0) / len(signal),  # 11 zero-crossing rate
         ])
     return feats
 
@@ -47,7 +55,6 @@ for file in files:
 
 X = np.array(X)
 y = np.array(y)
-
 print("Total samples:", len(X))
 
 # ---------------- TRAIN TEST SPLIT ----------------
