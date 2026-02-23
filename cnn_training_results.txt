@@ -1,0 +1,32 @@
+CNN TRAINING & TEST RESULTS (with Butterworth filtering)
+═══════════════════════════════════════════════════════════
+
+Date: 2026-02-23 19:10:52
+Sampling rate: 50.0 Hz   Cutoff: 12.0 Hz
+Window size: 75   Stride: 50
+Train / Test split: 435 / 109
+Training time: 6.0 seconds
+
+Test Set Performance:
+Accuracy:     0.9817
+Macro F1:     0.9828
+
+Classification Report:
+              precision    recall  f1-score   support
+
+     forward     1.0000    0.9545    0.9767        22
+        idle     1.0000    1.0000    1.0000        21
+        left     1.0000    0.9524    0.9756        21
+       right     1.0000    1.0000    1.0000        20
+        stop     0.9259    1.0000    0.9615        25
+
+    accuracy                         0.9817       109
+   macro avg     0.9852    0.9814    0.9828       109
+weighted avg     0.9830    0.9817    0.9818       109
+
+Confusion Matrix:
+[[21  0  0  0  1]
+ [ 0 21  0  0  0]
+ [ 0  0 20  0  1]
+ [ 0  0  0 20  0]
+ [ 0  0  0  0 25]]
