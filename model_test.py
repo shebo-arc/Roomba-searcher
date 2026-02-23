@@ -13,7 +13,7 @@ scaler = joblib.load("svm_scaler.pkl")
 ser = serial.Serial('COM3', 115200)
 
 # Sliding window buffer
-WINDOW_SIZE = 100  # adjust depending on sampling rate
+WINDOW_SIZE = 75  # adjust depending on sampling rate
 buffer = deque(maxlen=WINDOW_SIZE)
 
 # Movement threshold (you may tune this)
