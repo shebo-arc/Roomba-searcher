@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-CSV_FILE = "data/gesture_data16.csv"
+CSV_FILE = "data/kri19.csv"
 
 df = pd.read_csv(CSV_FILE)
 df["label"] = df["label"].astype(str)

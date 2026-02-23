@@ -5,7 +5,7 @@ import time
 
 PORT = "COM3"      # change this
 BAUD = 115200
-OUTPUT_FILE = "data/gesture_data16.csv"
+OUTPUT_FILE = "data/kri20.csv"
 
 GESTURES = ["idle", "forward", "left", "right", "stop"]
 #GESTURES = ["idle", "left"]

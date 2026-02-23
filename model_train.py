@@ -9,8 +9,8 @@ import joblib
 from scipy.stats import skew, kurtosis, entropy
 
 # ---------------- CONFIG ----------------
-WINDOW_SIZE = 100
-STRIDE = 25
+WINDOW_SIZE = 75
+STRIDE = 50
 FEATURES = ["ay", "az", "gx", "gz"]
 GESTURES = ["idle","forward", "left", "right", "stop"]
 # ----------------------------------------
@@ -68,7 +68,7 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
 # ---------------- SVM ----------------
-model = SVC(kernel="rbf", C=10, gamma="scale")
+model = SVC(kernel="rbf", C=10, gamma="scale",probability=True)
 model.fit(X_train, y_train)
 
 # ---------------- EVALUATION ----------------
@@ -82,6 +82,6 @@ print(confusion_matrix(y_test, y_pred))
 
 # Save model + scaler
 joblib.dump(model, "svm_gesture_model.pkl")
-joblib.dump(scaler, "scaler.pkl")
+joblib.dump(scaler, "svm_scaler.pkl")
 
 print("\nModel saved.")
