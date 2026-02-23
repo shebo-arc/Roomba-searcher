@@ -1,32 +1,30 @@
-CNN TRAINING & TEST RESULTS (with Butterworth filtering)
+CNN TRAINING & TEST RESULTS (with Augmentation + Filtering)
 ═══════════════════════════════════════════════════════════
 
-Date: 2026-02-23 19:10:52
-Sampling rate: 50.0 Hz   Cutoff: 12.0 Hz
-Window size: 75   Stride: 50
-Train / Test split: 435 / 109
-Training time: 6.0 seconds
+Date: 2026-02-23 22:59:50
+Total samples: 1088
+Train/Test: 870 / 218
+Training time: 6.7 sec
 
-Test Set Performance:
-Accuracy:     0.9817
-Macro F1:     0.9828
+Accuracy: 0.9908
+Macro F1: 0.9913
 
 Classification Report:
               precision    recall  f1-score   support
 
-     forward     1.0000    0.9545    0.9767        22
-        idle     1.0000    1.0000    1.0000        21
-        left     1.0000    0.9524    0.9756        21
-       right     1.0000    1.0000    1.0000        20
-        stop     0.9259    1.0000    0.9615        25
+     forward     0.9556    1.0000    0.9773        43
+        idle     1.0000    1.0000    1.0000        43
+        left     1.0000    1.0000    1.0000        42
+       right     1.0000    1.0000    1.0000        41
+        stop     1.0000    0.9592    0.9792        49
 
-    accuracy                         0.9817       109
-   macro avg     0.9852    0.9814    0.9828       109
-weighted avg     0.9830    0.9817    0.9818       109
+    accuracy                         0.9908       218
+   macro avg     0.9911    0.9918    0.9913       218
+weighted avg     0.9912    0.9908    0.9908       218
 
 Confusion Matrix:
-[[21  0  0  0  1]
- [ 0 21  0  0  0]
- [ 0  0 20  0  1]
- [ 0  0  0 20  0]
- [ 0  0  0  0 25]]
+[[43  0  0  0  0]
+ [ 0 43  0  0  0]
+ [ 0  0 42  0  0]
+ [ 0  0  0 41  0]
+ [ 2  0  0  0 47]]
