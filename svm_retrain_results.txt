@@ -1,0 +1,35 @@
+SVM TRAINING & TEST RESULTS
+═══════════════════════════
+
+Date: 2026-02-28 17:22:01
+Window size: 75 | Stride: 50
+Augmentation: 1 per sample
+Total samples: 1088
+Train / Test split: 870 / 218
+
+Training time: 0.11 seconds
+
+Test Set Performance:
+────────────────────
+Accuracy:     0.9817
+Macro F1:     0.9807
+
+Classification Report:
+              precision    recall  f1-score   support
+
+     forward     1.0000    1.0000    1.0000        43
+        idle     1.0000    1.0000    1.0000        43
+        left     0.9318    0.9762    0.9535        42
+       right     0.9744    0.9268    0.9500        41
+        stop     1.0000    1.0000    1.0000        49
+
+    accuracy                         0.9817       218
+   macro avg     0.9812    0.9806    0.9807       218
+weighted avg     0.9820    0.9817    0.9816       218
+
+Confusion Matrix:
+[[43  0  0  0  0]
+ [ 0 43  0  0  0]
+ [ 0  0 41  1  0]
+ [ 0  0  3 38  0]
+ [ 0  0  0  0 49]]

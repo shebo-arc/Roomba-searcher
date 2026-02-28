@@ -7,8 +7,8 @@ from scipy.stats import skew, kurtosis
 import time  # ← added for timing
 
 # Load trained model and scaler
-model = joblib.load("svm_direct_model.pkl")
-scaler = joblib.load("svm_direct_scaler.pkl")
+model = joblib.load("svm_retrain_model.pkl")
+scaler = joblib.load("svm_retrain_scaler.pkl")
 
 # Serial connection
 ser = serial.Serial('COM3', 115200)

@@ -121,7 +121,7 @@ print("\nTraining SVM model...")
 model = SVC(
     kernel="rbf",
     C=10,
-    gamma="scale",
+    gamma=0.1,
     probability=True,
     random_state=42,
     class_weight='balanced'
@@ -143,7 +143,7 @@ report = classification_report(y_test, y_pred, digits=4, zero_division=0)
 cm = confusion_matrix(y_test, y_pred, labels=GESTURES)
 
 # ─── Save results to file ───────────────────────────────────────────
-with open("svm_training_results.txt", "w", encoding="utf-8") as f:
+with open("svm_retrain_results.txt", "w", encoding="utf-8") as f:
     f.write("SVM TRAINING & TEST RESULTS\n")
     f.write("═══════════════════════════\n\n")
     f.write(f"Date: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -166,11 +166,11 @@ with open("svm_training_results.txt", "w", encoding="utf-8") as f:
     f.write("Confusion Matrix:\n")
     f.write(str(cm) + "\n")
 
-print("\nResults saved to: svm_training_results.txt")
+print("\nResults saved to: svm_retrain_results.txt")
 
 # ─── Save final model ───────────────────────────────────────────────
-joblib.dump(model, "svm_direct_model.pkl")
-joblib.dump(scaler, "svm_direct_scaler.pkl")
+joblib.dump(model, "svm_retrain_model.pkl")
+joblib.dump(scaler, "svm_retrain_scaler.pkl")
 
 print("\nFinal model & scaler saved.")
 print("Done.")
