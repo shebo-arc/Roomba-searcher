@@ -3,20 +3,20 @@ import pandas as pd
 import glob
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score
 import joblib
-from scipy.stats import skew, kurtosis
+from scipy.stats import skew
 from scipy.interpolate import interp1d
+from sklearn.model_selection import train_test_split
+import time
 
 # ---------------- CONFIG ----------------
-WINDOW_SIZE = 50
-STRIDE = 25
+WINDOW_SIZE = 75
+STRIDE = 50
 FEATURES = ["ay", "az", "gx", "gz"]  # ← best channels according to your ANOVA/MI
 GESTURES = ["idle", "forward", "left", "right", "stop"]
 
-N_FOLDS = 5
-AUGMENT_PER_SAMPLE = 0  # how many augmented versions per original window
+AUGMENT_PER_SAMPLE = 1  # how many augmented versions per original window
 
 # Augmentation parameters
 NOISE_LEVEL = 0.025  # relative to std
@@ -38,14 +38,10 @@ def extract_features(window):
             np.min(signal),
             np.max(signal),
             np.max(signal) - np.min(signal),
-            np.median(signal),
-            np.median(np.abs(signal - np.median(signal))),
-            np.percentile(signal, 75) - np.percentile(signal, 25),
-            np.sqrt(np.mean(signal ** 2)),  # RMS
+            np.sqrt(np.mean(signal ** 2)),
             skew(signal, nan_policy='omit'),
-            kurtosis(signal, nan_policy='omit'),
-            np.sum(signal ** 2) / len(signal),  # normalized energy
-            np.sum(np.diff(np.sign(signal)) != 0) / len(signal),  # ZCR
+            np.sum(signal ** 2) / len(signal),
+            np.sum(np.diff(np.sign(signal)) != 0) / len(signal),
         ])
     return np.array(feats)
 
@@ -127,78 +123,72 @@ y = np.array(y_aug)
 print(f"Total samples after augmentation: {len(X)}  "
       f"({AUGMENT_PER_SAMPLE + 1} versions per original)")
 
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.2,
+    stratify=y,
+    random_state=42
+)
 
-# ─── Cross-validation + final model ────────────────────────────────
-cv = StratifiedKFold(n_splits=N_FOLDS, shuffle=True, random_state=42)
+print(f"Training samples: {len(X_train)} | Test samples: {len(X_test)}")
 
-accuracies = []
-macro_f1s = []
-conf_matrices = []
 
-for fold, (train_idx, test_idx) in enumerate(cv.split(X, y), 1):
-    X_tr, X_te = X[train_idx], X[test_idx]
-    y_tr, y_te = y[train_idx], y[test_idx]
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
 
-    scaler = StandardScaler()
-    X_tr = scaler.fit_transform(X_tr)
-    X_te = scaler.transform(X_te)
-
-    # You can also try: n_estimators=200–500, max_depth=12–20, class_weight='balanced'
-    model = RandomForestClassifier(
-        n_estimators=300,
-        max_depth=15,
-        min_samples_split=4,
-        random_state=42,
-        n_jobs=-1,
-        class_weight='balanced'
-    )
-
-    model.fit(X_tr, y_tr)
-    y_pred = model.predict(X_te)
-
-    acc = accuracy_score(y_te, y_pred)
-    f1 = f1_score(y_te, y_pred, average='macro')
-
-    accuracies.append(acc)
-    macro_f1s.append(f1)
-
-    print(f"\nFold {fold}/{N_FOLDS}  —  Accuracy: {acc:.4f}   Macro-F1: {f1:.4f}")
-    # print(classification_report(y_te, y_pred, zero_division=0))   # uncomment if you want per-fold detail
-
-    # Optional: accumulate confusion matrix
-    if fold == 1:
-        cm_total = confusion_matrix(y_te, y_pred, labels=GESTURES)
-    else:
-        cm_total += confusion_matrix(y_te, y_pred, labels=GESTURES)
-
-print("\n" + "═" * 60)
-print(f"CV Results ({N_FOLDS}-fold Stratified)")
-print(f"Accuracy:  {np.mean(accuracies):.4f} ± {np.std(accuracies):.4f}")
-print(f"Macro F1:  {np.mean(macro_f1s):.4f} ± {np.std(macro_f1s):.4f}")
-print("═" * 60)
-
-print("\nAverage Confusion Matrix (summed across folds):")
-print(cm_total)
-
-# ─── Final model on all data for deployment ────────────────────────
-print("\nTraining final model on ALL data...")
-
-scaler_final = StandardScaler()
-X_scaled = scaler_final.fit_transform(X)
-
-final_model = RandomForestClassifier(
-    n_estimators=300,
-    max_depth=15,
+# You can also try: n_estimators=200–500, max_depth=12–20, class_weight='balanced'
+model = RandomForestClassifier(
+    n_estimators=150,
+    max_depth=10,
     min_samples_split=4,
     random_state=42,
     n_jobs=-1,
     class_weight='balanced'
 )
-final_model.fit(X_scaled, y)
 
-# Save
-joblib.dump(final_model, "rf_gesture_model.pkl")
-joblib.dump(scaler_final, "rf_scaler.pkl")
+start_time = time.time()
+model.fit(X_train, y_train)
+train_time = time.time() - start_time
 
-print("Final model & scaler saved.")
+# ─── Evaluation on test set ─────────────────────────────────────────
+y_pred = model.predict(X_test)
+
+acc = accuracy_score(y_test, y_pred)
+macro_f1 = f1_score(y_test, y_pred, average='macro')
+
+report = classification_report(y_test, y_pred, digits=4, zero_division=0)
+cm = confusion_matrix(y_test, y_pred, labels=GESTURES)
+
+# ─── Save results to file ───────────────────────────────────────────
+with open("rf_results.txt", "w", encoding="utf-8") as f:
+    f.write("RF TRAINING & TEST RESULTS\n")
+    f.write("═══════════════════════════\n\n")
+    f.write(f"Date: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+    f.write(f"Window size: {WINDOW_SIZE} | Stride: {STRIDE}\n")
+    f.write(f"Augmentation: {AUGMENT_PER_SAMPLE} per sample\n")
+    f.write(f"Total samples: {len(X)}\n")
+    f.write(f"Train / Test split: {len(X_train)} / {len(X_test)}\n\n")
+
+    f.write(f"Training time: {train_time:.2f} seconds\n\n")
+
+    f.write("Test Set Performance:\n")
+    f.write("────────────────────\n")
+    f.write(f"Accuracy:     {acc:.4f}\n")
+    f.write(f"Macro F1:     {macro_f1:.4f}\n\n")
+
+    f.write("Classification Report:\n")
+    f.write(report)
+    f.write("\n")
+
+    f.write("Confusion Matrix:\n")
+    f.write(str(cm) + "\n")
+
+print("\nResults saved to: rf_results.txt")
+
+# ─── Save final model ───────────────────────────────────────────────
+joblib.dump(model, "rf_model.pkl")
+joblib.dump(scaler, "rf_scaler.pkl")
+
+print("\nFinal model & scaler saved.")
 print("Done.")

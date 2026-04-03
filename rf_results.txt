@@ -1,0 +1,35 @@
+RF TRAINING & TEST RESULTS
+═══════════════════════════
+
+Date: 2026-03-16 17:54:29
+Window size: 75 | Stride: 50
+Augmentation: 1 per sample
+Total samples: 1088
+Train / Test split: 870 / 218
+
+Training time: 0.29 seconds
+
+Test Set Performance:
+────────────────────
+Accuracy:     0.9587
+Macro F1:     0.9566
+
+Classification Report:
+              precision    recall  f1-score   support
+
+     forward     1.0000    1.0000    1.0000        43
+        idle     1.0000    1.0000    1.0000        43
+        left     0.8837    0.9048    0.8941        42
+       right     0.9000    0.8780    0.8889        41
+        stop     1.0000    1.0000    1.0000        49
+
+    accuracy                         0.9587       218
+   macro avg     0.9567    0.9566    0.9566       218
+weighted avg     0.9588    0.9587    0.9587       218
+
+Confusion Matrix:
+[[43  0  0  0  0]
+ [ 0 43  0  0  0]
+ [ 0  0 38  4  0]
+ [ 0  0  5 36  0]
+ [ 0  0  0  0 49]]
